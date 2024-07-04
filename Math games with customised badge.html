@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>சேர்த்தல் கழித்தல் பயிற்சி</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #ffffff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin: 20px 0;
+        }
+        .section-box {
+            background: #98ff98;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .section-box:hover {
+            background: #76cc76;
+        }
+        .equation {
+            margin: 20px;
+            padding: 20px;
+            background: #f8f8f8;
+            color: #333;
+            border: 1px solid #98ff98;
+            border-radius: 10px;
+            display: inline-block;
+            font-size: 24px;
+            transition: background 0.3s;
+        }
+        .options {
+            margin: 10px;
+        }
+        .option {
+            background: #98ff98;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .option:hover {
+            background: #76cc76;
+        }
+        .result {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .balloon {
+            width: 50px;
+            height: 70px;
+            display: inline-block;
+            margin: 5px;
+            background: radial-gradient(circle, #98ff98, #76cc76);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+        }
+        .balloon:before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 20px;
+            background: #76cc76;
+        }
+        .replay-button {
+            background: #98ff98;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .replay-button:hover {
+            background: #76cc76;
+        }
+        .progress-bar {
+            width: 80%;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 20px auto;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+        }
+        .progress {
+            height: 30px;
+            background: #98ff98;
+            text-align: center;
+            line-height: 30px;
+            color: #333;
+            transition: width 0.5s;
+        }
+        .mode-button {
+            background: #98ff98;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .mode-button:hover {
+            background: #76cc76;
+        }
+        .timer {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .badge-container {
+            margin: 20px;
+            display: none;
+        }
+        .download-button {
+            background: #98ff98;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .download-button:hover {
+            background: #76cc76;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        .input-field {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>சேர்த்தல் கழித்தல் பயிற்சி</h1>
+    <div>
+        <button class="mode-button" onclick="setMode('addition')">சேர்த்தல்</button>
+        <button class="mode-button" onclick="setMode('subtraction')">கழித்தல்</button>
+    </div>
+    <div id="sections"></div>
+    <div id="game"></div>
+    <div class="result" id="result"></div>
+    <div class="timer" id="timer">நேரம்: 0 விநாடிகள்</div>
+    <div class="progress-bar">
+        <div class="progress" id="progress" style="width: 0%;">0%</div>
+    </div>
+    <button id="replay" class="replay-button" onclick="replayGame()">மீண்டும் முயல்க</button>
+
+    <div class="badge-container" id="badge-container">
+        <div class="input-container">
+            <input id="student-name" class="input-field" type="text" placeholder="உங்கள் பெயர்" />
+            <input id="student-class" class="input-field" type="text" placeholder="உங்கள் வகுப்பு" />
+        </div>
+        <button class="download-button" onclick="createBadge()">Generate Badge</button>
+        <h2>Badge</h2>
+        <canvas id="badge-canvas" width="300" height="300"></canvas>
+        <br>
+        <button class="download-button" onclick="downloadBadge()">Save Badge</button>
+    </div>
+
+    <script>
+        let mode = 'addition';
+        const sections = Array.from({ length: 10 }, (_, i) => ({
+            start: i * 10 + 1,
+            end: (i + 1) * 10,
+            equations: generateEquations(i * 10 + 1, (i + 1) * 10, mode)
+        }));
+
+        let currentSection = 0;
+        let currentEquation = 0;
+        let score = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = [];
+        let initialQuestions = 0;
+        let timer;
+        let startTime;
+        let elapsedTime = 0;
+
+        function generateEquations(start, end, mode) {
+            const equations = [];
+            for (let i = 0; i < 100; i++) {
+                let num1, num2, result;
+                do {
+                    num1 = Math.floor(Math.random() * end) + 1;
+                    num2 = Math.floor(Math.random() * end) + 1;
+                    if (mode === 'addition') {
+                        result = num1 + num2;
+                    } else {
+                        result = num1 - num2;
+                    }
+                } while (result < start || result > end);
+
+                const options = generateOptions(result, start, end, mode);
+                equations.push({ num1, num2, result, options });
+            }
+            return equations;
+        }
+
+        function generateOptions(correctAnswer, start, end, mode) {
+            const options = new Set([correctAnswer]);
+            while (options.size < 6) {
+                let distractor;
+                if (mode === 'addition') {
+                    distractor = correctAnswer + Math.floor(Math.random() * 20) - 10;
+                } else {
+                    distractor = correctAnswer - Math.floor(Math.random() * 20) + 10;
+                }
+                if (distractor >= start && distractor <= end && distractor !== correctAnswer) {
+                    options.add(distractor);
+                }
+            }
+            return Array.from(options).sort(() => Math.random() - 0.5);
+        }
+
+        function loadSections() {
+            const sectionsHtml = sections.map((section, index) =>
+                `<div class="section-box" onclick="selectSection(${index})">${section.start}-${section.end}</div>`
+            ).join('');
+            document.getElementById('sections').innerHTML = sectionsHtml;
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            sections.forEach((section, index) => {
+                sections[index].equations = generateEquations(section.start, section.end, mode);
+            });
+            selectSection(0);
+        }
+
+        function selectSection(index) {
+            currentSection = index;
+            currentEquation = 0;
+            score = 0;
+            correctAnswers = 0;
+            wrongAnswers = [];
+            initialQuestions = sections[currentSection].equations.length;
+            startTime = null;
+            elapsedTime = 0;
+            clearInterval(timer);
+            document.getElementById('timer').innerHTML = 'நேரம்: 0 விநாடிகள்';
+            loadEquation();
+        }
+
+        function loadEquation() {
+            if (currentEquation >= sections[currentSection].equations.length) {
+                if (wrongAnswers.length > 0) {
+                    sections[currentSection].equations = wrongAnswers;
+                    wrongAnswers = [];
+                    currentEquation = 0;
+                    document.getElementById('result').innerHTML = '<p>தவறான பதில்களை மீண்டும் முயற்சிக்க...</p>';
+                } else {
+                    clearInterval(timer);
+                    document.getElementById('result').innerHTML = `<p>விளையாட்டு முடிந்தது! மதிப்பெண்: ${score}</p>`;
+                    document.getElementById('replay').style.display = 'inline-block';
+                    document.getElementById('badge-container').style.display = 'block';
+                    return;
+                }
+            }
+
+            const equation = sections[currentSection].equations[currentEquation];
+            const equationHtml = `${equation.num1} ${mode === 'addition' ? '+' : '-'} ${equation.num2} = ?`;
+            const optionsHtml = equation.options.map(option =>
+                `<button class="option" onclick="checkAnswer(${option})">${option}</button>`
+            ).join('');
+
+            document.getElementById('game').innerHTML = `<div class="equation">${equationHtml}</div><div class="options">${optionsHtml}</div>`;
+
+            if (!startTime) {
+                startTime = new Date();
+                timer = setInterval(() => {
+                    elapsedTime = Math.floor((new Date() - startTime) / 1000);
+                    document.getElementById('timer').innerHTML = `நேரம்: ${elapsedTime} விநாடிகள்`;
+                }, 1000);
+            }
+        }
+
+        function checkAnswer(selectedOption) {
+            const equation = sections[currentSection].equations[currentEquation];
+            if (selectedOption === equation.result) {
+                score++;
+                correctAnswers++;
+                document.getElementById('result').innerHTML = '<p style="color: green;">சரி!</p>';
+                const progressPercentage = (correctAnswers / initialQuestions) * 100;
+                document.getElementById('progress').style.width = `${progressPercentage}%`;
+                document.getElementById('progress').innerHTML = `${Math.round(progressPercentage)}%`;
+            } else {
+                wrongAnswers.push(equation);
+                document.getElementById('result').innerHTML = '<p style="color: red;">தவறு. மீண்டும் முயற்சிக்கவும்.</p>';
+            }
+            currentEquation++;
+            setTimeout(loadEquation, 1000);
+        }
+
+        function replayGame() {
+            document.getElementById('replay').style.display = 'none';
+            document.getElementById('badge-container').style.display = 'none';
+            selectSection(currentSection);
+        }
+
+        function createBadge() {
+            const name = document.getElementById('student-name').value || 'Unknown';
+            const studentClass = document.getElementById('student-class').value || 'Unknown';
+
+            const canvas = document.getElementById('badge-canvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Create circular gradient background
+            const gradient = ctx.createRadialGradient(150, 150, 20, 150, 150, 150);
+            gradient.addColorStop(0, '#ffcccc');
+            gradient.addColorStop(1, '#ff6666');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(150, 150, 150, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Georgia';
+            ctx.fillText(`பெயர்: ${name}`, 50, 100);
+            ctx.fillText(`வகுப்பு: ${studentClass}`, 50, 130);
+            ctx.fillText(`முறை: ${mode === 'addition' ? 'சேர்த்தல்' : 'கழித்தல்'}`, 50, 160);
+            ctx.fillText(`பகுதி: ${sections[currentSection].start}-${sections[currentSection].end}`, 50, 190);
+            ctx.fillText(`நேரம்: ${elapsedTime} விநாடிகள்`, 50, 220);
+        }
+
+        function downloadBadge() {
+            const canvas = document.getElementById('badge-canvas');
+            const link = document.createElement('a');
+            link.download = 'badge.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        loadSections();
+    </script>
+</body>
+</html>
