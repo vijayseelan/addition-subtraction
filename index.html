@@ -167,7 +167,7 @@
     <div id="sections"></div>
     <div id="game"></div>
     <div class="result" id="result"></div>
-    <div class="timer" id="timer">நேரம்: 0 விநாடிகள்</div>
+    <div class="timer" id="timer">நேரம்: 0 வினாடிகள்</div>
     <div class="progress-bar">
         <div class="progress" id="progress" style="width: 0%;">0%</div>
     </div>
@@ -264,7 +264,7 @@
             startTime = null;
             elapsedTime = 0;
             clearInterval(timer);
-            document.getElementById('timer').innerHTML = 'நேரம்: 0 விநாடிகள்';
+            document.getElementById('timer').innerHTML = 'நேரம்: 0 வினாடிகள்';
             loadEquation();
         }
 
@@ -274,7 +274,7 @@
                     sections[currentSection].equations = wrongAnswers;
                     wrongAnswers = [];
                     currentEquation = 0;
-                    document.getElementById('result').innerHTML = '<p>தவறான பதில்களை மீண்டும் முயற்சிக்க...</p>';
+                    document.getElementById('result').innerHTML = '<p>தவறான பதில்கள் இருப்பின் மீண்டும் முயலவும்...</p>';
                 } else {
                     clearInterval(timer);
                     document.getElementById('result').innerHTML = `<p>விளையாட்டு முடிந்தது! மதிப்பெண்: ${score}</p>`;
@@ -296,7 +296,7 @@
                 startTime = new Date();
                 timer = setInterval(() => {
                     elapsedTime = Math.floor((new Date() - startTime) / 1000);
-                    document.getElementById('timer').innerHTML = `நேரம்: ${elapsedTime} விநாடிகள்`;
+                    document.getElementById('timer').innerHTML = `நேரம்: ${elapsedTime} வினாடிகள்`;
                 }, 1000);
             }
         }
@@ -312,7 +312,7 @@
                 document.getElementById('progress').innerHTML = `${Math.round(progressPercentage)}%`;
             } else {
                 wrongAnswers.push(equation);
-                document.getElementById('result').innerHTML = '<p style="color: red;">தவறு. மீண்டும் முயற்சிக்கவும்.</p>';
+                document.getElementById('result').innerHTML = '<p style="color: red;">தவறு. மீண்டும் முயல்க.</p>';
             }
             currentEquation++;
             setTimeout(loadEquation, 1000);
